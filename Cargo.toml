@@ -7,7 +7,6 @@ keywords = ["cli", "command-line", "terminal", "interactive"]
 categories = ["command-line-interface"] 
 autotests = false
 description = "Easily and efficiently develop quality and fully featured CLI apps."
-readme = "Readme.md"
 license = "MIT"
 repository = "https://github.com/mdizak/rust-falcon-cli"
 edition = "2021"
