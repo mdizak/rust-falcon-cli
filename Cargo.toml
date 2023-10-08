@@ -1,12 +1,13 @@
 [package]
 name = "falcon-cli"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Matt Dizak"]
 homepage = "https://apexpl.io/"
 keywords = ["cli", "command-line", "terminal", "interactive"]
 categories = ["command-line-interface"] 
 autotests = false
 description = "Easily and efficiently develop quality and fully featured CLI apps."
+readme = "Readme.md"
 license = "MIT"
 repository = "https://github.com/mdizak/rust-falcon-cli"
 edition = "2021"
