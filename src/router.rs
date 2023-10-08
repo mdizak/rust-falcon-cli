@@ -1,16 +1,15 @@
-
+use crate::help::CliHelpScreen;
+use crate::CliCommand;
+use crate::*;
 use std::collections::HashMap;
 use std::env;
 use strsim::levenshtein;
-use crate::CliCommand;
-use crate::help::CliHelpScreen;
-use crate::*;
 
 pub struct CliRouter {
     pub commands: HashMap<String, Box<dyn CliCommand>>,
     pub shortcuts: HashMap<String, String>,
     pub value_flags: HashMap<String, Vec<String>>,
-    pub categories: HashMap<String, (String, String)>
+    pub categories: HashMap<String, (String, String)>,
 }
 
 pub struct CliRequest {
@@ -19,41 +18,42 @@ pub struct CliRequest {
     pub args: Vec<String>,
     pub flags: Vec<String>,
     pub value_flags: HashMap<String, String>,
-    pub shortcuts: Vec<String>
+    pub shortcuts: Vec<String>,
 }
 
 impl Default for CliRouter {
-
     fn default() -> Self {
         Self::new()
     }
 }
 
 impl CliRouter {
-
     pub fn new() -> Self {
-
         Self {
             commands: HashMap::new(),
             shortcuts: HashMap::new(),
             value_flags: HashMap::new(),
-            categories: HashMap::new()
+            categories: HashMap::new(),
         }
-
     }
 
-    /// Link a struct / impl that inherits the CliRouter trait to a command name.  Takes three arguments, 
-        /// the full name of the command, a vector of available shortcuts, and a vector of 
-        /// long-form flags (prefixed with dashes (--)) for which a value is expected.
-    pub fn add<T: CliCommand + Default + 'static>(&mut self, alias: &str, shortcuts: Vec<&str>, value_flags: Vec<&str>) {
-
+    /// Link a struct / impl that inherits the CliRouter trait to a command name.  Takes three arguments,
+    /// the full name of the command, a vector of available shortcuts, and a vector of
+    /// long-form flags (prefixed with dashes (--)) for which a value is expected.
+    pub fn add<T: CliCommand + Default + 'static>(
+        &mut self,
+        alias: &str,
+        shortcuts: Vec<&str>,
+        value_flags: Vec<&str>,
+    ) {
         // Add to list of commands
         let cmd = Box::<T>::default();
         self.commands.insert(alias.to_string(), cmd);
 
         // Add shortcuts
         for shortcut in shortcuts {
-            self.shortcuts.insert(shortcut.to_string(), alias.to_string());
+            self.shortcuts
+                .insert(shortcut.to_string(), alias.to_string());
         }
 
         // Add value flags
@@ -61,11 +61,10 @@ impl CliRouter {
         self.value_flags.insert(alias.to_string(), flags);
     }
 
-    /// Taking arguments passed via command line into account,  checks all routes that were added and 
-    /// tries to determine the correct impl to execute.  This function is automatically 
+    /// Taking arguments passed via command line into account,  checks all routes that were added and
+    /// tries to determine the correct impl to execute.  This function is automatically
     /// executed by the cli_run() function and should never be manually executed.
     pub fn lookup(&self) -> (&Box<dyn CliCommand>, CliRequest) {
-
         // Get args
         let mut cmdargs: Vec<String> = env::args().collect();
         cmdargs.remove(0);
@@ -91,7 +90,6 @@ impl CliRouter {
 
         // Check routing table for command
         loop {
-
             // Check for zero cmdargs
             if cmdargs.is_empty() && is_help {
                 break;
@@ -126,37 +124,39 @@ impl CliRouter {
 
         // Get flags
         while !extra_args.is_empty() {
-            let chk_arg = extra_args[0].to_string();    
+            let chk_arg = extra_args[0].to_string();
             extra_args.remove(0);
 
             if chk_arg.starts_with("--") {
                 let arg = chk_arg.trim_start_matches('-').to_string();
                 if flag_values.contains(&arg) {
                     value_flags.insert(arg, extra_args[0].to_string());
-                extra_args.remove(0);
+                    extra_args.remove(0);
                 } else {
                     flags.push(arg);
                 }
-
             } else if chk_arg.starts_with('-') {
                 let arg = chk_arg.trim_start_matches('-').to_string();
                 for c in arg.chars() {
                     flags.push(c.to_string());
                 }
-
             } else {
                 args.push(chk_arg);
             }
         }
 
         // Get all shortcuts
-        let shortcuts: Vec<String> = self.shortcuts.iter().filter_map(|(key, value)| {
-            if *value == cmd_alias {
-                Some(key.to_string())
-            } else {
-                None
-            }
-        }).collect();
+        let shortcuts: Vec<String> = self
+            .shortcuts
+            .iter()
+            .filter_map(|(key, value)| {
+                if *value == cmd_alias {
+                    Some(key.to_string())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         let cmd = self.commands.get(&cmd_alias).unwrap();
         let req = CliRequest {
@@ -165,17 +165,16 @@ impl CliRouter {
             args,
             flags,
             value_flags,
-            shortcuts
+            shortcuts,
         };
 
         (cmd, req)
     }
 
-    /// Never needs to be manually executed, and is used when a full match for the command name can not 
-    /// be found.  Uses the levenshtein to see if any commands closely resemble the 
+    /// Never needs to be manually executed, and is used when a full match for the command name can not
+    /// be found.  Uses the levenshtein to see if any commands closely resemble the
     /// command name given in case of typo.
     fn lookup_similar(&self, chk_cmd: &String) -> Option<&String> {
-
         let mut distance = 4;
         let mut res = None;
 
@@ -192,10 +191,9 @@ impl CliRouter {
 
     /// Add a new top level category that contains CLI commands.  Used for organization and to display proper help screens.
     pub fn add_category(&mut self, alias: &str, name: &str, description: &str) {
-        self.categories.insert(alias.to_string(), (name.to_string(), description.to_string()));
+        self.categories.insert(
+            alias.to_string(),
+            (name.to_string(), description.to_string()),
+        );
     }
-
 }
-
-
-

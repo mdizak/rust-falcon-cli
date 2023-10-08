@@ -1,6 +1,6 @@
 [package]
 name = "falcon-cli"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Matt Dizak"]
 homepage = "https://apexpl.io/"
 keywords = ["cli", "command-line", "terminal", "interactive"]

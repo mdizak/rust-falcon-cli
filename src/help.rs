@@ -1,8 +1,7 @@
-
-use indexmap::{IndexMap, indexmap};
-use crate::CliCommand;
 use crate::router::CliRouter;
+use crate::CliCommand;
 use crate::*;
+use indexmap::{indexmap, IndexMap};
 
 pub struct CliHelpScreen {
     pub title: String,
@@ -10,26 +9,25 @@ pub struct CliHelpScreen {
     pub description: String,
     pub params: IndexMap<String, String>,
     pub flags: IndexMap<String, String>,
-    pub examples: Vec<String>
+    pub examples: Vec<String>,
 }
 
 impl CliHelpScreen {
-
     pub fn new(title: &str, usage: &str, description: &str) -> Self {
-
         Self {
             title: title.to_string(),
             usage: usage.to_string(),
             description: description.to_string(),
             params: indexmap![],
             flags: indexmap![],
-            examples: Vec::new()
+            examples: Vec::new(),
         }
     }
 
     /// Add item to list of parameters that are displayed when the help screen is output.
     pub fn add_param(&mut self, param: &str, description: &str) {
-        self.params.insert(param.to_string(), description.to_string());
+        self.params
+            .insert(param.to_string(), description.to_string());
     }
 
     /// Add item to list of flags that are displayed when the help screen is output.
@@ -42,10 +40,9 @@ impl CliHelpScreen {
         self.examples.push(example.to_string());
     }
 
-    // Never needs to be manually executed, and automatically executed if the first argument passed 
-    /// via the command line is 'help' or '-h'.  Outputs the help screen fo the specified CLI command. 
+    // Never needs to be manually executed, and automatically executed if the first argument passed
+    /// via the command line is 'help' or '-h'.  Outputs the help screen fo the specified CLI command.
     pub fn render(cmd: &Box<dyn CliCommand>, cmd_alias: &String, shortcuts: &Vec<String>) {
-
         // Get help screen
         let help = cmd.help();
 
@@ -63,7 +60,9 @@ impl CliHelpScreen {
 
         // Description
         if !help.description.is_empty() {
-            let options = textwrap::Options::new(75).initial_indent("    ").subsequent_indent("    ");
+            let options = textwrap::Options::new(75)
+                .initial_indent("    ")
+                .subsequent_indent("    ");
             let desc = textwrap::fill(help.description.as_str(), &options);
 
             cli_send("DESCRIPTION:\r\n\r\n");
@@ -95,11 +94,10 @@ impl CliHelpScreen {
         cli_send("-- END --\r\n\r\n");
     }
 
-    /// Never needs to be manually executed, and is automatically when the first and only argument passed 
-    /// via command line is 'help' or '-h'.  Displays either all availalbe categories or CLI commands 
+    /// Never needs to be manually executed, and is automatically when the first and only argument passed
+    /// via command line is 'help' or '-h'.  Displays either all availalbe categories or CLI commands
     /// depending whether or not categories have been added into the router.
     pub fn render_index(router: &CliRouter) {
-
         // Header
         cli_header("Available Commands");
         cli_send("Below shows all available commands.  Run any of the commands with 'help' as the first argument to view full details on the command.\r\n\r\n");
@@ -108,7 +106,6 @@ impl CliHelpScreen {
         // Display as needed
         let mut table: IndexMap<String, String> = indexmap![];
         if !router.categories.is_empty() {
-
             // Sort keys
             let mut keys: Vec<String> = router.categories.keys().cloned().collect();
             keys.sort();
@@ -124,7 +121,6 @@ impl CliHelpScreen {
 
         // No categories, display individual commands
         } else {
-
             // Sort keys
             let mut keys: Vec<String> = router.commands.keys().cloned().collect();
             keys.sort();
@@ -145,18 +141,19 @@ impl CliHelpScreen {
         std::process::exit(0);
     }
 
-    /// Never needs to be manually executed, and only applicable if you're using multiple categories to organize groups 
-    /// of CLI commands.  Executed first first argument via command line is either 'help' or '-h', and 
+    /// Never needs to be manually executed, and only applicable if you're using multiple categories to organize groups
+    /// of CLI commands.  Executed first first argument via command line is either 'help' or '-h', and
     /// second is the name of a category.  Will display all CLI commands available within that category.
     pub fn render_category(router: &CliRouter, cat_alias: &String) {
-
         // GEt category
         let (cat_title, cat_desc) = router.categories.get(cat_alias).unwrap();
         cli_header(cat_title);
 
         // Description
         if !cat_desc.is_empty() {
-            let options = textwrap::Options::new(75).initial_indent("    ").subsequent_indent("    ");
+            let options = textwrap::Options::new(75)
+                .initial_indent("    ")
+                .subsequent_indent("    ");
             let desc = textwrap::fill(cat_desc.as_str(), &options);
 
             cli_send("DESCRIPTION:\r\n\r\n");
@@ -165,7 +162,12 @@ impl CliHelpScreen {
         }
 
         let chk = format!("{} ", cat_alias);
-        let mut keys: Vec<String> = router.commands.keys().filter(|&k| k.starts_with(&chk)).cloned().collect();
+        let mut keys: Vec<String> = router
+            .commands
+            .keys()
+            .filter(|&k| k.starts_with(&chk))
+            .cloned()
+            .collect();
         keys.sort();
 
         // GO through commands
@@ -173,9 +175,11 @@ impl CliHelpScreen {
         for alias in keys {
             let cmd = router.commands.get(&alias).unwrap();
             let cmd_help = cmd.help();
-            table.insert(alias.trim_start_matches(&chk).to_string(), cmd_help.description);
+            table.insert(
+                alias.trim_start_matches(&chk).to_string(),
+                cmd_help.description,
+            );
         }
-
 
         // Display commands
         cli_send("AVAILABLE COMMANDS\r\n\r\n");
@@ -183,7 +187,4 @@ impl CliHelpScreen {
         cli_send("-- END --\r\n\r\n");
         std::process::exit(0);
     }
-
 }
-
-

@@ -3,24 +3,24 @@
 #![allow(clippy::borrowed_box)]
 //
 // Easily and efficiently develop high quality and fully featured CLI apps.  Supports the following:
-// 
+//
 // * Excellent and easily accessible functions to send wordwrapped text, send a header, get user input, get password, get new password (ie. enter twice to confirm), get y/n confirmation, display table layout ala mySQL prompt, display two column borderless table, and more.
 // * Easily add routes to new CLI commands.  Simply define the impl of the CLI command, the command alias, shortcuts, and any flags that will contain values.
 // * Built-in help screens for every CLI command
 // * Utilizes the levenshtein algorithm to automatically identify and correct typos within command names.
 // * Categorize commands to one or more levels for better organization.
-// 
+//
 //  For full usage details and code examples, please visit the [Readme file](https://github.com/mdizak/rust-aalcon-cli/).
-// 
+//
 
-use std::io::Write;
-use std::io;
-use rpassword::read_password;
-use zxcvbn::zxcvbn;
-use std::collections::HashMap;
-pub use indexmap::{IndexMap, indexmap};
 use help::CliHelpScreen;
+pub use indexmap::{indexmap, IndexMap};
 use router::CliRouter;
+use rpassword::read_password;
+use std::collections::HashMap;
+use std::io;
+use std::io::Write;
+use zxcvbn::zxcvbn;
 
 pub mod help;
 pub mod router;
@@ -32,7 +32,6 @@ pub trait CliCommand {
 
 // Execute the necessary CLI command based on arguments passed.  This function should be executed once all necessary outes have been defined.
 pub fn cli_run(router: &CliRouter) {
-
     // Lookup route
     let (cmd, req) = router.lookup();
 
@@ -42,9 +41,7 @@ pub fn cli_run(router: &CliRouter) {
     } else {
         cmd.process(req.args, req.flags, req.value_flags);
     }
-
 }
-
 
 // Display header.  Outputs given text with 30 line of dashes at the top and bottom to signify a header.
 pub fn cli_header(text: &str) {
@@ -63,8 +60,7 @@ pub fn cli_send(text: &str) {
 
 // Pass an IndexMap (similar to HashMap but remains ordered) and will return the option the user selects.  Will not return until user submits valid option value.
 pub fn cli_get_option(question: &str, options: &IndexMap<String, String>) -> String {
-
-        let message = format!("{}\r\n\r\n", question);
+    let message = format!("{}\r\n\r\n", question);
     cli_send(&message);
     for (key, value) in options.iter() {
         let line = format!("    [{}] {}\r\n", key, value);
@@ -77,7 +73,9 @@ pub fn cli_get_option(question: &str, options: &IndexMap<String, String>) -> Str
     loop {
         input = String::new();
 
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
         let input = input.trim();
         if !options.contains_key(input) {
             print!("\r\nInvalid option, try again: ");
@@ -90,17 +88,17 @@ pub fn cli_get_option(question: &str, options: &IndexMap<String, String>) -> Str
     input
 }
 
-
 // Get input from the user
 pub fn cli_get_input(message: &str, default_value: &str) -> String {
-
     // Display message
     cli_send(message);
     io::stdout().flush().unwrap();
 
     // Get user input
     let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
     let mut input = input.trim();
 
     // Default value, if needed
@@ -113,7 +111,6 @@ pub fn cli_get_input(message: &str, default_value: &str) -> String {
 
 // Request confirmation from the user
 pub fn cli_confirm(message: &str) -> bool {
-
     // Send message
     let confirm_message = format!("{} (y/n): ", message);
     cli_send(&confirm_message);
@@ -123,7 +120,9 @@ pub fn cli_confirm(message: &str) -> bool {
     loop {
         _input = String::new();
 
-        io::stdin().read_line(&mut _input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut _input)
+            .expect("Failed to read line");
         let _input = _input.trim().to_lowercase();
 
         if _input != "y" && _input != "n" {
@@ -135,15 +134,18 @@ pub fn cli_confirm(message: &str) -> bool {
 
     // Return
     let res_char = _input.chars().next().unwrap();
-    
+
     res_char == 'y'
 }
 
 // Get a single password without the user's input being output to the terminal.
 pub fn cli_get_password(message: &str) -> String {
-
     // Get message
-    let password_message = if message.is_empty() { "Password: " } else { message };
+    let password_message = if message.is_empty() {
+        "Password: "
+    } else {
+        message
+    };
 
     // Get password
     let mut _password = String::new();
@@ -151,7 +153,7 @@ pub fn cli_get_password(message: &str) -> String {
         cli_send(password_message);
         _password = read_password().unwrap();
 
-        if _password.is_empty() { 
+        if _password.is_empty() {
             cli_send("You did not specify a password");
         } else {
             break;
@@ -163,7 +165,6 @@ pub fn cli_get_password(message: &str) -> String {
 
 // Get a new password that does both, ensures the user types it in twice to confirm and also checks for desired security strength.  The 'strength' parameter can be 0 - 4.
 pub fn cli_get_new_password(req_strength: u8) -> String {
-
     // Initialize
     let mut _password = String::new();
     let mut _confirm_password = String::new();
@@ -173,7 +174,7 @@ pub fn cli_get_new_password(req_strength: u8) -> String {
         cli_send("Desired Password: ");
         _password = read_password().unwrap();
 
-        if _password.is_empty() { 
+        if _password.is_empty() {
             cli_send("You did not specify a password");
             continue;
         }
@@ -200,11 +201,10 @@ pub fn cli_get_new_password(req_strength: u8) -> String {
 
 // Display a tabular output similar to any SQL database prompt's output
 pub fn cli_display_table(columns: Vec<&str>, rows: Vec<Vec<&str>>) {
-
     // Return if no rows
     if rows.is_empty() {
         cli_send("No rows to display.\n\n");
-            return;
+        return;
     }
 
     // nitialize sizes
@@ -215,14 +215,11 @@ pub fn cli_display_table(columns: Vec<&str>, rows: Vec<Vec<&str>>) {
 
     // Get sizes of columns
     for _row in rows.clone() {
-
         for col in columns.as_slice() {
-
             let num: usize = col.len();
             if num > sizes[col] {
                 sizes.insert(col, num + 3);
             }
-
         }
     }
 
@@ -240,7 +237,6 @@ pub fn cli_display_table(columns: Vec<&str>, rows: Vec<Vec<&str>>) {
 
     // Display the rows
     for row in rows {
-
         // Go through values
         let mut line = String::from("|");
         for (i, val) in row.into_iter().enumerate() {
@@ -250,13 +246,10 @@ pub fn cli_display_table(columns: Vec<&str>, rows: Vec<Vec<&str>>) {
         println!("{}", line);
     }
     println!("{}\n", header);
-
 }
-
 
 // Display a two column array with proper spacing.  Mainly used for the help() function to display available parameters and flags.
 pub fn cli_display_array(rows: &IndexMap<String, String>) {
-
     // Get max left column size
     let mut size = 0;
     for key in rows.keys() {
@@ -265,18 +258,18 @@ pub fn cli_display_array(rows: &IndexMap<String, String>) {
         }
     }
     let indent = " ".repeat(size);
-        let indent_size = size - 4;
+    let indent_size = size - 4;
 
     // Go through rows
     for (key, value) in rows {
         let left_col = format!("    {}{}", key, " ".repeat(indent_size - key.len()));
-        let options = textwrap::Options::new(75).initial_indent(&left_col).subsequent_indent(&indent);
+        let options = textwrap::Options::new(75)
+            .initial_indent(&left_col)
+            .subsequent_indent(&indent);
         let line = textwrap::fill(value, &options);
         println!("{}", line);
     }
     cli_send("\r\n");
-
-
 }
 
 // Give an error message, followed by exiting with status of 1.
@@ -287,7 +280,7 @@ pub fn cli_error(message: &str) {
 }
 
 // Output success message that displays a vector of filenames or anything else indented below the message.
-pub fn cli_success (message: &str, indented_lines: Vec<&str>) {
+pub fn cli_success(message: &str, indented_lines: Vec<&str>) {
     cli_send(message);
     cli_send("\r\n");
     for line in indented_lines {
@@ -300,6 +293,3 @@ pub fn cli_success (message: &str, indented_lines: Vec<&str>) {
 pub fn cli_clear_screen() {
     print!("\x1B[2J");
 }
-
-
-
