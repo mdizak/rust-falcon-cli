@@ -307,7 +307,7 @@ macro_rules! cli_error {
             let result = args.join("");
             let options = Textwrap_Options::new(75);
         let wrapped_text = Textwrap_Fill(result.as_str(), options);
-            print!("{}", wrapped_text);
+            print!("ERROR: {}\r\n\r\n", wrapped_text);
             io::stdout().flush().unwrap();
             std::process::exit(1);
         }
