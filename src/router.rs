@@ -69,7 +69,7 @@ impl CliRouter {
         let mut cmdargs: Vec<String> = env::args().collect();
         cmdargs.remove(0);
         if cmdargs.is_empty() {
-            cli_error("You did not specify a command to run.  Please specify a command or use 'help' or '-h' to view a list of all available commands.");
+            cli_error!("You did not specify a command to run.  Please specify a command or use 'help' or '-h' to view a list of all available commands.");
         }
 
         // Blank variables
@@ -94,7 +94,7 @@ impl CliRouter {
             if cmdargs.is_empty() && is_help {
                 break;
             } else if cmdargs.is_empty() {
-                cli_error("No command exists with that name.  Use either 'help' or the -h flag to view a list of all available commands.");
+                cli_error!("No command exists with that name.  Use either 'help' or the -h flag to view a list of all available commands.");
             }
             let alias = cmdargs.join(" ").to_string();
 

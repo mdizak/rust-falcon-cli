@@ -15,11 +15,13 @@
 
 use help::CliHelpScreen;
 pub use indexmap::{indexmap, IndexMap};
+pub use textwrap::Options as Textwrap_Options;
+pub use textwrap::fill as Textwrap_Fill;
 use router::CliRouter;
 use rpassword::read_password;
 use std::collections::HashMap;
-use std::io;
-use std::io::Write;
+pub use std::io;
+pub use std::io::Write;
 use zxcvbn::zxcvbn;
 
 pub mod help;
@@ -50,23 +52,39 @@ pub fn cli_header(text: &str) {
     println!("------------------------------\n");
 }
 
-// Output text wordwrapped to 70 characters per-line.
-pub fn cli_send(text: &str) {
-    let options = textwrap::Options::new(75);
-    let wrapped_text = textwrap::fill(text, options);
-    print!("{}", wrapped_text);
-    io::stdout().flush().unwrap();
+/// utput text wordwrapped to 70 characters per-line.
+#[macro_export]
+macro_rules! cli_send {
+    ($($arg:expr),* $(,)?) => {
+        {
+            // Create a Vec<String> to hold the arguments.
+            let mut args = vec![];
+
+            // Convert each argument to a String.
+            $(
+                args.push($arg.to_string());
+            )*
+
+            // Join the arguments into a single String.
+            let result = args.join("");
+            let options = Textwrap_Options::new(75);
+            let wrapped_text = Textwrap_Fill(result.as_str(), options);
+            print!("{}", wrapped_text);
+            io::stdout().flush().unwrap();
+        }
+    };
 }
+
 
 // Pass an IndexMap (similar to HashMap but remains ordered) and will return the option the user selects.  Will not return until user submits valid option value.
 pub fn cli_get_option(question: &str, options: &IndexMap<String, String>) -> String {
     let message = format!("{}\r\n\r\n", question);
-    cli_send(&message);
+    cli_send!(&message);
     for (key, value) in options.iter() {
         let line = format!("    [{}] {}\r\n", key, value);
-        cli_send(&line);
+        cli_send!(&line);
     }
-    cli_send("\r\nSelect One: ");
+    cli_send!("\r\nSelect One: ");
 
     // Get user input
     let mut input: String;
@@ -91,7 +109,7 @@ pub fn cli_get_option(question: &str, options: &IndexMap<String, String>) -> Str
 // Get input from the user
 pub fn cli_get_input(message: &str, default_value: &str) -> String {
     // Display message
-    cli_send(message);
+    cli_send!(message);
     io::stdout().flush().unwrap();
 
     // Get user input
@@ -113,7 +131,7 @@ pub fn cli_get_input(message: &str, default_value: &str) -> String {
 pub fn cli_confirm(message: &str) -> bool {
     // Send message
     let confirm_message = format!("{} (y/n): ", message);
-    cli_send(&confirm_message);
+    cli_send!(&confirm_message);
 
     // Get user input
     let mut _input = "".to_string();
@@ -126,7 +144,7 @@ pub fn cli_confirm(message: &str) -> bool {
         let _input = _input.trim().to_lowercase();
 
         if _input != "y" && _input != "n" {
-            cli_send("Invalid option, please try again.  Enter (y/n): ");
+            cli_send!("Invalid option, please try again.  Enter (y/n): ");
         } else {
             break;
         }
@@ -150,11 +168,11 @@ pub fn cli_get_password(message: &str) -> String {
     // Get password
     let mut _password = String::new();
     loop {
-        cli_send(password_message);
+        cli_send!(password_message);
         _password = read_password().unwrap();
 
         if _password.is_empty() {
-            cli_send("You did not specify a password");
+            cli_send!("You did not specify a password");
         } else {
             break;
         }
@@ -171,26 +189,26 @@ pub fn cli_get_new_password(req_strength: u8) -> String {
 
     // Get new password
     loop {
-        cli_send("Desired Password: ");
+        cli_send!("Desired Password: ");
         _password = read_password().unwrap();
 
         if _password.is_empty() {
-            cli_send("You did not specify a password");
+            cli_send!("You did not specify a password");
             continue;
         }
 
         // Check strength
         let strength = zxcvbn(&_password, &[]).unwrap();
         if strength.score() < req_strength {
-            cli_send("Password is not strong enough.  Please try again.\n\n");
+            cli_send!("Password is not strong enough.  Please try again.\n\n");
             continue;
         }
 
         // Confirm password
-        cli_send("Confirm Password: ");
+        cli_send!("Confirm Password: ");
         _confirm_password = read_password().unwrap();
         if _password != _confirm_password {
-            cli_send("Passwords do not match, please try again.\n\n");
+            cli_send!("Passwords do not match, please try again.\n\n");
             continue;
         }
         break;
@@ -203,7 +221,7 @@ pub fn cli_get_new_password(req_strength: u8) -> String {
 pub fn cli_display_table(columns: Vec<&str>, rows: Vec<Vec<&str>>) {
     // Return if no rows
     if rows.is_empty() {
-        cli_send("No rows to display.\n\n");
+        cli_send!("No rows to display.\n\n");
         return;
     }
 
@@ -269,25 +287,43 @@ pub fn cli_display_array(rows: &IndexMap<String, String>) {
         let line = textwrap::fill(value, &options);
         println!("{}", line);
     }
-    cli_send("\r\n");
+    cli_send!("\r\n");
 }
 
 // Give an error message, followed by exiting with status of 1.
-pub fn cli_error(message: &str) {
-    let err_message = format!("Error: {}\n\n", message);
-    cli_send(&err_message);
-    std::process::exit(1);
+#[macro_export]
+macro_rules! cli_error {
+    ($($arg:expr),* $(,)?) => {
+        {
+            // Create a Vec<String> to hold the arguments.
+            let mut args = vec![];
+
+            // Convert each argument to a String.
+            $(
+                args.push($arg.to_string());
+            )*
+
+            // Join the arguments into a single String.
+            let result = args.join("");
+            let options = Textwrap_Options::new(75);
+        let wrapped_text = Textwrap_Fill(result.as_str(), options);
+            print!("{}", wrapped_text);
+            io::stdout().flush().unwrap();
+            std::process::exit(1);
+        }
+    };
 }
 
 // Output success message that displays a vector of filenames or anything else indented below the message.
-pub fn cli_success(message: &str, indented_lines: Vec<&str>) {
-    cli_send(message);
-    cli_send("\r\n");
+pub fn cli_success (message: &str, indented_lines: Vec<&str>) {
+    cli_send!(&message);
+    cli_send!("\r\n");
     for line in indented_lines {
         println!("    {}", line);
     }
-    cli_send("\r\n");
+    cli_send!("\r\n");
 }
+
 
 // Clear all lines within terminal and revert to blank terminal screen.
 pub fn cli_clear_screen() {

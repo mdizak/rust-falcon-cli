@@ -48,15 +48,15 @@ impl CliHelpScreen {
 
         // Display basics
         cli_header(help.title.as_str());
-        cli_send("USAGE\r\n\r\n");
-        cli_send(format!("    {}\r\n", help.usage).as_str());
+        cli_send!("USAGE\r\n");
+        cli_send!(format!("    {}\r\n", help.usage).as_str());
 
         // Display shortcuts
         for shortcut in shortcuts {
             let tmp_usage = help.usage.replace(cmd_alias, shortcut.as_str());
-            cli_send(format!("    {}\r\n", tmp_usage).as_str());
+            cli_send!(format!("    {}\r\n", tmp_usage).as_str());
         }
-        cli_send("\r\n");
+        cli_send!("\r\n");
 
         // Description
         if !help.description.is_empty() {
@@ -65,33 +65,33 @@ impl CliHelpScreen {
                 .subsequent_indent("    ");
             let desc = textwrap::fill(help.description.as_str(), &options);
 
-            cli_send("DESCRIPTION:\r\n\r\n");
-            cli_send(desc.as_str());
-            cli_send("\r\n\r\n");
+            cli_send!("DESCRIPTION:\r\n\r\n");
+            cli_send!(desc.as_str());
+            cli_send!("\r\n\r\n");
         }
 
         // Parameters
         if !help.params.is_empty() {
-            cli_send("PARAMETERS\r\n\r\n");
+            cli_send!("PARAMETERS\r\n\r\n");
             cli_display_array(&help.params);
         }
 
         // Flags
         if !help.flags.is_empty() {
-            cli_send("FLAGS\r\n\r\n");
+            cli_send!("FLAGS\r\n\r\n");
             cli_display_array(&help.flags);
         }
 
         // Examples
         if !help.examples.is_empty() {
-            cli_send("EXAMPLES\r\n\r\n");
+            cli_send!("EXAMPLES\r\n\r\n");
             for example in help.examples {
                 println!("    {}\r\n", example);
             }
         }
 
         // End
-        cli_send("-- END --\r\n\r\n");
+        cli_send!("-- END --\r\n\r\n");
     }
 
     /// Never needs to be manually executed, and is automatically when the first and only argument passed
@@ -100,8 +100,8 @@ impl CliHelpScreen {
     pub fn render_index(router: &CliRouter) {
         // Header
         cli_header("Available Commands");
-        cli_send("Below shows all available commands.  Run any of the commands with 'help' as the first argument to view full details on the command.\r\n\r\n");
-        cli_send("AVAILABLE COMMANDS\r\n\r\n");
+        cli_send!("Below shows all available commands.  Run any of the commands with 'help' as the first argument to view full details on the command.\r\n\r\n");
+        cli_send!("AVAILABLE COMMANDS\r\n\r\n");
 
         // Display as needed
         let mut table: IndexMap<String, String> = indexmap![];
@@ -137,7 +137,7 @@ impl CliHelpScreen {
         }
 
         // Exit
-        cli_send("-- END --\r\n");
+        cli_send!("-- END --\r\n");
         std::process::exit(0);
     }
 
@@ -156,9 +156,9 @@ impl CliHelpScreen {
                 .subsequent_indent("    ");
             let desc = textwrap::fill(cat_desc.as_str(), &options);
 
-            cli_send("DESCRIPTION:\r\n\r\n");
-            cli_send(desc.as_str());
-            cli_send("\r\n\r\n");
+            cli_send!("DESCRIPTION:\r\n\r\n");
+            cli_send!(desc.as_str());
+            cli_send!("\r\n\r\n");
         }
 
         let chk = format!("{} ", cat_alias);
@@ -182,9 +182,9 @@ impl CliHelpScreen {
         }
 
         // Display commands
-        cli_send("AVAILABLE COMMANDS\r\n\r\n");
+        cli_send!("AVAILABLE COMMANDS\r\n\r\n");
         cli_display_array(&table);
-        cli_send("-- END --\r\n\r\n");
+        cli_send!("-- END --\r\n\r\n");
         std::process::exit(0);
     }
 }

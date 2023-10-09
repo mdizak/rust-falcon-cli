@@ -7,6 +7,7 @@ There's a few things to note:
 * You must link each struct / impl via the CliRouter::add() method for the CLI command to work, as exampled below.
 * Every impl that represents a CLI command must have a help() method that returns an instance of the CliHelpScreen struct. 
 * Categorizing commands into groups for better organization is fully supported, including multiple levels of categories.
+* the cli_send!() and cli_error!() macros work exactly the same as print!(), accept an unlimited number of placeholders and arguments, but also wordwrap the text to 75 characters.
 
 #### CLI Command struct / impl
 
@@ -27,9 +28,9 @@ Below is an example struct / impl that inherits the CliCommand trait.
 
             // Cecks
             if args.len() == 0 {
-                cli_error("You did not specify a domain name to create.");
+                cli_error!("You did not specify a domain name to create.");
             } else if !value_flags.contains_key("ip-address") {
-                cli_error("You did not specify an '--ip-address' flag specifying the IP address to assign the domain to.");
+                cli_error!("You did not specify an '--ip-address' flag specifying the IP address to assign the domain to.");
             }
             let ip_address = value_flags.get("ip-address").unwrap();
 
@@ -37,7 +38,7 @@ Below is an example struct / impl that inherits the CliCommand trait.
             if !flags.contains(&"n".to_string()) {
                 let confirm_msg = format!("Are you sure you wish to create the domain {} on the IP address {}? ", args[0], ip_address);
                 if !cli_confirm(&confirm_msg) {
-                    cli_send("Aborting.\r\n\r\n");
+                    cli_send~("Aborting.\r\n\r\n");
                     return;
                 }
             }
