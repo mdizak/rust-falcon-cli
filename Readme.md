@@ -13,6 +13,7 @@ For full usage details including code example, please visit the [Usage page](htt
 
 ## Contact
 
-If you need any assistance or software development
+If you need any assistance or software development, contact me anytime via e-mail at matt@apexpl.io.
+
 
 

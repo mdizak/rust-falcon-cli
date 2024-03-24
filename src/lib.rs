@@ -55,23 +55,27 @@ pub fn cli_header(text: &str) {
 /// utput text wordwrapped to 70 characters per-line.
 #[macro_export]
 macro_rules! cli_send {
-    ($($arg:expr),* $(,)?) => {
-        {
-            // Create a Vec<String> to hold the arguments.
-            let mut args = vec![];
+    ($text:expr) => {
+        let wrapped_text = Textwrap_Fill($text, Textwrap_Options::new(75));
+        print!("{}", wrapped_text);
+        io::stdout().flush().unwrap();
+    };
+    ($text:expr, $( $arg:expr ),*) => {
 
-            // Convert each argument to a String.
-            $(
-                args.push($arg.to_string());
-            )*
+        // Gather args
+        let mut args = vec![];
+        $( args.push($arg.to_string()); )*
 
-            // Join the arguments into a single String.
-            let result = args.join("");
-            let options = Textwrap_Options::new(75);
-            let wrapped_text = Textwrap_Fill(result.as_str(), options);
-            print!("{}", wrapped_text);
-            io::stdout().flush().unwrap();
+        // Replace placeholders
+        let mut text: String = $text.to_string();
+        for arg in args {
+            text = text.replacen("{}", arg.to_string().as_str(), 1);
         }
+
+        // DIsplay text
+        let wrapped_text = Textwrap_Fill(text.as_str(), Textwrap_Options::new(75));
+        print!("{}", wrapped_text);
+        io::stdout().flush().unwrap();
     };
 }
 
@@ -293,26 +297,30 @@ pub fn cli_display_array(rows: &IndexMap<String, String>) {
 // Give an error message, followed by exiting with status of 1.
 #[macro_export]
 macro_rules! cli_error {
-    ($($arg:expr),* $(,)?) => {
-        {
-            // Create a Vec<String> to hold the arguments.
-            let mut args = vec![];
+    ($text:expr) => {
+        let wrapped_text = Textwrap_Fill(format!("ERROR: {}", $text).as_str(), Textwrap_Options::new(75));
+        print!("{}\r\n", wrapped_text);
+        io::stdout().flush().unwrap();
+    };
+    ($text:expr, $( $arg:expr ),*) => {
 
-            // Convert each argument to a String.
-            $(
-                args.push($arg.to_string());
-            )*
+        // Gather args
+        let mut args = vec![];
+        $( args.push($arg.to_string()); )*
 
-            // Join the arguments into a single String.
-            let result = args.join("");
-            let options = Textwrap_Options::new(75);
-        let wrapped_text = Textwrap_Fill(result.as_str(), options);
-            print!("ERROR: {}\r\n\r\n", wrapped_text);
-            io::stdout().flush().unwrap();
-            std::process::exit(1);
+        // Replace placeholders
+        let mut text: String = $text.to_string();
+        for arg in args {
+            text = text.replacen("{}", arg.to_string().as_str(), 1);
         }
+
+        // DIsplay text
+        let wrapped_text = Textwrap_Fill(format!("ERROR: {}", text).as_str(), Textwrap_Options::new(75));
+        print!("{}\r\n", wrapped_text);
+        io::stdout().flush().unwrap();
     };
 }
+
 
 // Output success message that displays a vector of filenames or anything else indented below the message.
 pub fn cli_success (message: &str, indented_lines: Vec<&str>) {
