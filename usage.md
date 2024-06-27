@@ -118,7 +118,7 @@ This will display a nicely formatted help screen that contains all details conta
 
 If you have a good number of CLI commands you may organize them into categories (eg. "account ALIAS", "domain ALIAS", etc.).  The 
 command names are then seperated by a space (eg. "account create", "account list", etc.).  You may also use multiple category levels so for example, 
-you may create a database at "sys smtp" and have a CLI command name at "sys cmt add".
+you may create a categoryatabase at "sys smtp" and have a CLI command at "sys smtp add".
 
 Categories can be added via the router.add_category() method, for example:
 
