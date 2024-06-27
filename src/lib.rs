@@ -107,7 +107,7 @@ pub fn cli_get_option(question: &str, options: &IndexMap<String, String>) -> Str
         }
     }
 
-    input
+    input.trim().to_string()
 }
 
 // Get input from the user

@@ -107,6 +107,7 @@ impl CliHelpScreen {
         let mut table: IndexMap<String, String> = indexmap![];
         if !router.categories.is_empty() {
             // Sort keys
+
             let mut keys: Vec<String> = router.categories.keys().cloned().collect();
             keys.sort();
 
@@ -161,7 +162,32 @@ impl CliHelpScreen {
             cli_send!("\r\n\r\n");
         }
 
+        // Sub categories
         let chk = format!("{} ", cat_alias);
+        let mut sub_categories: Vec<String> = router
+            .categories
+        .keys()
+        .filter(|&k| k.starts_with(&chk))
+        .cloned()
+        .collect();
+    sub_categories.sort();
+
+        // Go through sub-categories
+        let mut table: IndexMap<String, String> = indexmap![];
+        for full_alias in sub_categories {
+            let alias = full_alias.trim_start_matches(&chk).to_string();
+            if alias.contains(" ") {
+                continue;
+            }
+            let (_, desc) = router.categories.get(&full_alias).unwrap();
+
+            table.insert(
+                alias,
+                desc.clone()
+            );
+        }
+
+        // Get commands to display
         let mut keys: Vec<String> = router
             .commands
             .keys()
@@ -171,12 +197,15 @@ impl CliHelpScreen {
         keys.sort();
 
         // GO through commands
-        let mut table: IndexMap<String, String> = indexmap![];
-        for alias in keys {
-            let cmd = router.commands.get(&alias).unwrap();
+        for full_alias in keys {
+            let alias = full_alias.trim_start_matches(&chk).to_string();
+            if alias.contains(" ") {
+                continue;
+            }
+            let cmd = router.commands.get(&full_alias).unwrap();
             let cmd_help = cmd.help();
             table.insert(
-                alias.trim_start_matches(&chk).to_string(),
+                alias,
                 cmd_help.description,
             );
         }

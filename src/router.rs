@@ -70,6 +70,7 @@ impl CliRouter {
         cmdargs.remove(0);
         if cmdargs.is_empty() {
             cli_error!("You did not specify a command to run.  Please specify a command or use 'help' or '-h' to view a list of all available commands.");
+            std::process::exit(0);
         }
 
         // Blank variables
@@ -78,7 +79,7 @@ impl CliRouter {
 
         // Check if help
         let mut is_help: bool = false;
-        if cmdargs[0] == "help" || cmdargs[0] == "-h" {
+        if cmdargs.len() > 0 && (cmdargs[0] == "help" || cmdargs[0] == "-h") {
             is_help = true;
             cmdargs.remove(0);
         }
@@ -95,8 +96,9 @@ impl CliRouter {
                 break;
             } else if cmdargs.is_empty() {
                 cli_error!("No command exists with that name.  Use either 'help' or the -h flag to view a list of all available commands.");
+                std::process::exit(0);
             }
-            let alias = cmdargs.join(" ").to_string();
+            let alias = cmdargs.iter().map(|v| v.to_string()).filter(|a| !a.starts_with("-")).collect::<Vec<String>>().join(" ").to_string();
 
             if self.commands.contains_key(&alias) {
                 cmd_alias = alias;
@@ -120,7 +122,7 @@ impl CliRouter {
         let mut args: Vec<String> = Vec::new();
         let mut flags: Vec<String> = Vec::new();
         let mut value_flags: HashMap<String, String> = HashMap::new();
-        let flag_values = self.value_flags.get(&cmd_alias).unwrap();
+        let flag_values = self.value_flags.get(&cmd_alias).unwrap_or(&Vec::new()).clone();
 
         // Get flags
         while !extra_args.is_empty() {
