@@ -348,6 +348,7 @@ pub fn cli_confirm(message: &str) -> bool {
 /// let password = cli_get_password("Enter password: ", false);
 /// println!("Password entered successfully");
 /// ```
+#[cfg(not(feature="mock"))]
 pub fn cli_get_password(message: &str, allow_blank: bool) -> String {
     // Get message
     let password_message = if message.is_empty() {
@@ -370,6 +371,11 @@ pub fn cli_get_password(message: &str, allow_blank: bool) -> String {
     }
 
     _password
+}
+
+#[cfg(feature="mock")]
+pub fn cli_get_password(message: &str, allow_blank: bool) -> String {
+    cli_get_input(message, if allow_blank { "" } else { "password" })
 }
 
 /// Gets a new password from the user with confirmation and strength validation.
@@ -400,7 +406,9 @@ pub fn cli_get_password(message: &str, allow_blank: bool) -> String {
 /// let password = cli_get_new_password(3);
 /// println!("Strong password created successfully");
 /// ```
+#[cfg(not(feature = "mock"))]
 pub fn cli_get_new_password(req_strength: u8) -> String {
+println!("Nope, at the prod one");
     // Initialize
     let mut _password = String::new();
     let mut _confirm_password = String::new();
@@ -425,6 +433,41 @@ pub fn cli_get_new_password(req_strength: u8) -> String {
         // Confirm password
         cli_send!("Confirm Password: ");
         _confirm_password = read_password().unwrap();
+        if _password != _confirm_password {
+            cli_send!("Passwords do not match, please try again.\n\n");
+            continue;
+        }
+        break;
+    }
+
+    _password
+}
+
+#[cfg(feature = "mock")]
+pub fn cli_get_new_password(req_strength: u8) -> String {
+println!("Yes at the testing one");
+    // Initialize
+    let mut _password = String::new();
+    let mut _confirm_password = String::new();
+
+    // Get new password
+    loop {
+        _password = cli_get_input("Desired Password: ", "");
+
+        if _password.is_empty() {
+            cli_send!("You did not specify a password");
+            continue;
+        }
+
+        // Check strength
+        let strength = zxcvbn(&_password, &[]).unwrap();
+        if strength.score() < req_strength {
+            cli_send!("Password is not strong enough.  Please try again.\n\n");
+            continue;
+        }
+
+        // Confirm password
+        _confirm_password = cli_get_input("Confirm Password: ", "");
         if _password != _confirm_password {
             cli_send!("Passwords do not match, please try again.\n\n");
             continue;

@@ -1,12 +1,12 @@
 [package]
 name = "falcon-cli"
-version = "0.2.0"
+version = "0.2.1"
 description = "Efficiently develop fully featured CLI apps."
 edition = "2024"
 authors = ["Aquila Labs"]
 homepage = "https://cicero.sh/"
 keywords = ["cli", "command-line", "terminal", "interactive"]
-categories = ["parsing-tools"] 
+categories = ["command-line-interface"] 
 readme = "README.md"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mdizak/rust-falcon-cli"
@@ -17,6 +17,7 @@ name = "falcon_cli"
 [features]
 default = []
 log = ["dep:log"]
+mock = []
 
 [profile.release]
 strip="symbols"
