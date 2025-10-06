@@ -408,7 +408,6 @@ pub fn cli_get_password(message: &str, allow_blank: bool) -> String {
 /// ```
 #[cfg(not(feature = "mock"))]
 pub fn cli_get_new_password(req_strength: u8) -> String {
-println!("Nope, at the prod one");
     // Initialize
     let mut _password = String::new();
     let mut _confirm_password = String::new();
@@ -445,7 +444,6 @@ println!("Nope, at the prod one");
 
 #[cfg(feature = "mock")]
 pub fn cli_get_new_password(req_strength: u8) -> String {
-println!("Yes at the testing one");
     // Initialize
     let mut _password = String::new();
     let mut _confirm_password = String::new();
