@@ -4,6 +4,7 @@
 ![Downloads](https://img.shields.io/github/downloads/mdizak/rust-falcon-cli/total)
 
 
+
 # Falcon CLI
 
 Efficiently develop fully featured CLI applications in Rust with minimal boilerplate.
